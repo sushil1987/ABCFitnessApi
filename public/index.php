@@ -7,8 +7,51 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $app = AppFactory::create();
 
+// Add body parsing middleware with custom error handling
+$app->addBodyParsingMiddleware();
+
 // Add error middleware
 $app->addErrorMiddleware(true, true, true);
+
+// Add middleware to validate JSON content type and body
+$app->add(function ($request, $handler) {
+    $contentType = $request->getHeaderLine('Content-Type');
+    
+    if ($request->getMethod() === 'POST') {
+        // Check content type
+        if (strpos($contentType, 'application/json') === false) {
+            $response = new \Slim\Psr7\Response();
+            $response->getBody()->write(json_encode(['error' => 'Content-Type must be application/json']));
+            return $response
+                ->withStatus(415)
+                ->withHeader('Content-Type', 'application/json');
+        }
+        
+        // Validate JSON body
+        $contents = $request->getBody()->getContents();
+        if (empty($contents)) {
+            $response = new \Slim\Psr7\Response();
+            $response->getBody()->write(json_encode(['error' => 'Request body cannot be empty']));
+            return $response
+                ->withStatus(400)
+                ->withHeader('Content-Type', 'application/json');
+        }
+        
+        json_decode($contents);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $response = new \Slim\Psr7\Response();
+            $response->getBody()->write(json_encode(['error' => 'Invalid JSON format: ' . json_last_error_msg()]));
+            return $response
+                ->withStatus(400)
+                ->withHeader('Content-Type', 'application/json');
+        }
+        
+        // Rewind the body for later middleware
+        $request->getBody()->rewind();
+    }
+    
+    return $handler->handle($request);
+});
 
 use App\Storage\MemoryStorage;
 
