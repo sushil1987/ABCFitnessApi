@@ -1,0 +1,9 @@
+POST http://localhost:8000/api/classes
+Content-Type: application/json
+
+{
+    "class_name": "Yoga Basics",
+    "start_date": "2024-01-20 09:00:00",
+    "end_date": "2024-01-20 10:00:00",
+    "capacity": 20
+}
