@@ -1,0 +1,14 @@
+{
+    "name": "abcfitness/api",
+    "description": "ABC Fitness class management and booking system",
+    "require": {
+        "slim/slim": "^4.11",
+        "slim/psr7": "^1.6",
+        "php": "^7.4|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
